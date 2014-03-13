@@ -1,758 +1,750 @@
-package com.herocraftonline.heroes.util;
-
-import com.herocraftonline.heroes.Heroes;
-import com.herocraftonline.heroes.characters.Hero;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.math.BigDecimal;
-import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Random;
-import java.util.Set;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Server;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
+/*     */ package com.herocraftonline.heroes.util;
+/*     */ 
+          import org.apache.commons.lang.Validate;
+/*     */ import com.herocraftonline.heroes.Heroes;
+/*     */ import com.herocraftonline.heroes.characters.Hero;
+/*     */ import java.io.File;
+/*     */ import java.io.FileInputStream;
+/*     */ import java.io.FileOutputStream;
+/*     */ import java.io.IOException;
+/*     */ import java.io.InputStream;
+/*     */ import java.io.OutputStream;
+/*     */ import java.math.BigDecimal;
+/*     */ import java.security.SecureRandom;
+/*     */ import java.util.*;
+/*     */ import org.bukkit.Location;
+/*     */ import org.bukkit.Material;
+/*     */ import org.bukkit.Server;
+/*     */ import org.bukkit.World;
+/*     */ import org.bukkit.block.Block;
+/*     */ import org.bukkit.enchantments.Enchantment;
+/*     */ import org.bukkit.entity.Entity;
+/*     */ import org.bukkit.entity.EntityType;
+/*     */ import org.bukkit.entity.LivingEntity;
+/*     */ import org.bukkit.entity.Player;
+/*     */ import org.bukkit.entity.Slime;
+/*     */ import org.bukkit.entity.Wolf;
+/*     */ import org.bukkit.inventory.ItemStack;
+/*     */ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scheduler.BukkitScheduler;
-
-public final class Util
+/*     */ 
+/*     */ public final class Util
+/*     */ {
+/*     */   public static final List<String> swords;
+/*     */   public static final List<String> axes;
+/*     */   public static final List<String> shovels;
+/*     */   public static final List<String> picks;
+/*     */   public static final List<String> hoes;
+/*     */   public static final List<String> weapons;
+/*     */   public static final List<String> armors;
+/*     */   public static final List<String> tools;
+/*     */   public static final Set<Material> interactableBlocks;
+/*     */   public static final HashSet<Byte> interactableIds;
+/*     */   public static final Set<Material> transparentBlocks;
+/*     */   public static final HashSet<Byte> transparentIds;
+/*  60 */   private static final Random rand = new SecureRandom();
+/*     */ 
+/* 278 */   public static final HashMap<String, Location> deaths = new LinkedHashMap()
+/*     */   {
+/*     */     private static final int MAX_ENTRIES = 50;
+/*     */ 
+/*     */     protected boolean removeEldestEntry(Map.Entry eldest)
+/*     */     {
+/* 284 */       return size() > 50;
+/*     */     }
+/* 278 */   };
+/*     */ 
+public static double getDefaultMaxHealth(LivingEntity entity)
 {
-  public static final List<String> swords;
-  public static final List<String> axes;
-  public static final List<String> shovels;
-  public static final List<String> picks;
-  public static final List<String> hoes;
-  public static final List<String> weapons;
-  public static final List<String> armors;
-  public static final List<String> tools;
-  public static final Set<Material> interactableBlocks;
-  public static final HashSet<Byte> interactableIds;
-  public static final Set<Material> transparentBlocks;
-  public static final HashSet<Byte> transparentIds;
-  private static final Random rand = new SecureRandom();
-
-  public static final HashMap<String, Location> deaths = new LinkedHashMap()
+  switch (entity.getType())
   {
-    private static final int MAX_ENTRIES = 50;
-
-    protected boolean removeEldestEntry(Map.Entry eldest)
-    {
-      return size() > 50;
-    }
-  };
-
-  static
-  {
-    swords = new ArrayList(5);
-    swords.add("WOOD_SWORD");
-    swords.add("STONE_SWORD");
-    swords.add("IRON_SWORD");
-    swords.add("GOLD_SWORD");
-    swords.add("DIAMOND_SWORD");
-
-    axes = new ArrayList(5);
-    axes.add("WOOD_AXE");
-    axes.add("STONE_AXE");
-    axes.add("IRON_AXE");
-    axes.add("GOLD_AXE");
-    axes.add("DIAMOND_AXE");
-
-    shovels = new ArrayList(5);
-    shovels.add("WOOD_SPADE");
-    shovels.add("STONE_SPADE");
-    shovels.add("IRON_SPADE");
-    shovels.add("GOLD_SPADE");
-    shovels.add("DIAMOND_SPADE");
-
-    picks = new ArrayList(5);
-    picks.add("WOOD_PICKAXE");
-    picks.add("STONE_PICKAXE");
-    picks.add("IRON_PICKAXE");
-    picks.add("GOLD_PICKAXE");
-    picks.add("DIAMOND_PICKAXE");
-
-    hoes = new ArrayList(5);
-    hoes.add("WOOD_HOE");
-    hoes.add("STONE_HOE");
-    hoes.add("IRON_HOE");
-    hoes.add("GOLD_HOE");
-    hoes.add("DIAMOND_HOE");
-
-    tools = new ArrayList(2);
-    tools.add("SHEARS");
-    tools.add("FISHING_ROD");
-    tools.add("CARROT_STICK");
-    tools.addAll(shovels);
-    tools.addAll(hoes);
-
-    weapons = new ArrayList(26);
-    weapons.addAll(picks);
-    weapons.addAll(axes);
-    weapons.addAll(swords);
-    weapons.addAll(tools);
-    weapons.add("BOW");
-
-    armors = new ArrayList(21);
-    armors.add("LEATHER_HELMET");
-    armors.add("LEATHER_LEGGINGS");
-    armors.add("LEATHER_BOOTS");
-    armors.add("LEATHER_CHESTPLATE");
-    armors.add("IRON_HELMET");
-    armors.add("IRON_LEGGINGS");
-    armors.add("IRON_CHESTPLATE");
-    armors.add("IRON_BOOTS");
-    armors.add("CHAINMAIL_HELMET");
-    armors.add("CHAINMAIL_LEGGINGS");
-    armors.add("CHAINMAIL_BOOTS");
-    armors.add("CHAINMAIL_CHESTPLATE");
-    armors.add("GOLD_HELMET");
-    armors.add("GOLD_LEGGINGS");
-    armors.add("GOLD_CHESTPLATE");
-    armors.add("GOLD_BOOTS");
-    armors.add("DIAMOND_HELMET");
-    armors.add("DIAMOND_LEGGINGS");
-    armors.add("DIAMOND_CHESTPLATE");
-    armors.add("DIAMOND_BOOTS");
-    armors.add("PUMPKIN");
-    armors.add("SKULL_ITEM");
-    armors.add("MAGE1_HELMET");
-    armors.add("MAGE1_LEGGINGS");
-    armors.add("MAGE1_CHESTPLATE");
-    armors.add("MAGE1_BOOTS");
-    armors.add("MAGE2_HELMET");
-    armors.add("MAGE2_LEGGINGS");
-    armors.add("MAGE2_CHESTPLATE");
-    armors.add("MAGE2_BOOTS");
-    armors.add("WARRIOR1_HELMET");
-    armors.add("WARRIOR1_LEGGINGS");
-    armors.add("WARRIOR1_CHESTPLATE");
-    armors.add("WARRIOR1_BOOTS");
-    armors.add("WARRIOR2_HELMET");
-    armors.add("WARRIOR2_LEGGINGS");
-    armors.add("WARRIOR2_CHESTPLATE");
-    armors.add("WARRIOR2_BOOTS");
-    armors.add("ROGUE1_HELMET");
-    armors.add("ROGUE1_LEGGINGS");
-    armors.add("ROGUE1_CHESTPLATE");
-    armors.add("ROGUE1_BOOTS");
-    armors.add("ROGUE2_HELMET");
-    armors.add("ROGUE2_LEGGINGS");
-    armors.add("ROGUE2_CHESTPLATE");
-    armors.add("ROGUE2_BOOTS");
-    armors.add("CLERIC1_HELMET");
-    armors.add("CLERIC1_LEGGINGS");
-    armors.add("CLERIC1_CHESTPLATE");
-    armors.add("CLERIC1_BOOTS");
-    armors.add("CLERIC2_HELMET");
-    armors.add("CLERIC2_LEGGINGS");
-    armors.add("CLERIC2_CHESTPLATE");
-    armors.add("CLERIC2_BOOTS");
-
-    interactableBlocks = new HashSet(40);
-    interactableBlocks.add(Material.CHEST);
-    interactableBlocks.add(Material.LOCKED_CHEST);
-    interactableBlocks.add(Material.IRON_DOOR_BLOCK);
-    interactableBlocks.add(Material.SIGN);
-    interactableBlocks.add(Material.WALL_SIGN);
-    interactableBlocks.add(Material.SIGN_POST);
-    interactableBlocks.add(Material.WORKBENCH);
-    interactableBlocks.add(Material.STONE_BUTTON);
-    interactableBlocks.add(Material.WOOD_BUTTON);
-    interactableBlocks.add(Material.LEVER);
-    interactableBlocks.add(Material.WOODEN_DOOR);
-    interactableBlocks.add(Material.TRAP_DOOR);
-    interactableBlocks.add(Material.TRAPPED_CHEST);
-    interactableBlocks.add(Material.DIODE);
-    interactableBlocks.add(Material.DIODE_BLOCK_ON);
-    interactableBlocks.add(Material.DIODE_BLOCK_OFF);
-    interactableBlocks.add(Material.DISPENSER);
-    interactableBlocks.add(Material.HOPPER);
-    interactableBlocks.add(Material.DROPPER);
-    interactableBlocks.add(Material.REDSTONE_COMPARATOR);
-    interactableBlocks.add(Material.REDSTONE_COMPARATOR_ON);
-    interactableBlocks.add(Material.REDSTONE_COMPARATOR_OFF);
-    interactableBlocks.add(Material.FURNACE);
-    interactableBlocks.add(Material.BURNING_FURNACE);
-    interactableBlocks.add(Material.CAULDRON);
-    interactableBlocks.add(Material.JUKEBOX);
-    interactableBlocks.add(Material.NOTE_BLOCK);
-    interactableBlocks.add(Material.STORAGE_MINECART);
-    interactableBlocks.add(Material.ENDER_CHEST);
-    interactableBlocks.add(Material.FENCE_GATE);
-    interactableBlocks.add(Material.ENCHANTMENT_TABLE);
-    interactableBlocks.add(Material.BREWING_STAND);
-    interactableBlocks.add(Material.ITEM_FRAME);
-    interactableBlocks.add(Material.BOAT);
-    interactableBlocks.add(Material.MINECART);
-    interactableBlocks.add(Material.FLOWER_POT);
-    interactableBlocks.add(Material.BEACON);
-    interactableBlocks.add(Material.BED_BLOCK);
-    interactableBlocks.add(Material.ANVIL);
-    interactableBlocks.add(Material.COMMAND);
-
-    interactableIds = new HashSet(40);
-    interactableIds.add(Byte.valueOf((byte)Material.CHEST.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.LOCKED_CHEST.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.IRON_DOOR_BLOCK.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.SIGN.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.WALL_SIGN.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.SIGN_POST.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.WORKBENCH.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.STONE_BUTTON.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.WOOD_BUTTON.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.LEVER.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.WOODEN_DOOR.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.TRAP_DOOR.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.TRAPPED_CHEST.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.DIODE.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.DIODE_BLOCK_ON.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.DIODE_BLOCK_OFF.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.DISPENSER.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.HOPPER.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.DROPPER.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.REDSTONE_COMPARATOR.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.REDSTONE_COMPARATOR_ON.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.REDSTONE_COMPARATOR_OFF.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.FURNACE.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.BURNING_FURNACE.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.CAULDRON.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.JUKEBOX.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.NOTE_BLOCK.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.STORAGE_MINECART.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.ENDER_CHEST.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.FENCE_GATE.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.ENCHANTMENT_TABLE.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.BREWING_STAND.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.ITEM_FRAME.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.BOAT.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.MINECART.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.FLOWER_POT.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.BEACON.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.BED_BLOCK.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.ANVIL.getId()));
-    interactableIds.add(Byte.valueOf((byte)Material.COMMAND.getId()));
-
-    transparentBlocks = new HashSet(26);
-    transparentBlocks.add(Material.AIR);
-    transparentBlocks.add(Material.SNOW);
-    transparentBlocks.add(Material.TRIPWIRE);
-    transparentBlocks.add(Material.REDSTONE_WIRE);
-    transparentBlocks.add(Material.TORCH);
-    transparentBlocks.add(Material.REDSTONE_TORCH_OFF);
-    transparentBlocks.add(Material.REDSTONE_TORCH_ON);
-    transparentBlocks.add(Material.RED_ROSE);
-    transparentBlocks.add(Material.YELLOW_FLOWER);
-    transparentBlocks.add(Material.SAPLING);
-    transparentBlocks.add(Material.LADDER);
-    transparentBlocks.add(Material.STONE_PLATE);
-    transparentBlocks.add(Material.WOOD_PLATE);
-    transparentBlocks.add(Material.CROPS);
-    transparentBlocks.add(Material.LEVER);
-    transparentBlocks.add(Material.WATER);
-    transparentBlocks.add(Material.STATIONARY_WATER);
-    transparentBlocks.add(Material.RAILS);
-    transparentBlocks.add(Material.POWERED_RAIL);
-    transparentBlocks.add(Material.DETECTOR_RAIL);
-    transparentBlocks.add(Material.DIODE_BLOCK_OFF);
-    transparentBlocks.add(Material.DIODE_BLOCK_ON);
-    transparentBlocks.add(Material.CARPET);
-    transparentBlocks.add(Material.VINE);
-    transparentBlocks.add(Material.DEAD_BUSH);
-    transparentBlocks.add(Material.WATER_LILY);
-
-    transparentIds = new HashSet(26);
-    transparentIds.add(Byte.valueOf((byte)Material.AIR.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.SNOW.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.TRIPWIRE.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.REDSTONE_WIRE.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.TORCH.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.REDSTONE_TORCH_OFF.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.REDSTONE_TORCH_ON.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.RED_ROSE.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.YELLOW_FLOWER.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.SAPLING.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.LADDER.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.STONE_PLATE.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.WOOD_PLATE.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.CROPS.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.LEVER.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.WATER.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.STATIONARY_WATER.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.RAILS.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.POWERED_RAIL.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.DETECTOR_RAIL.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.DIODE_BLOCK_OFF.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.DIODE_BLOCK_ON.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.CARPET.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.VINE.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.DEAD_BUSH.getId()));
-    transparentIds.add(Byte.valueOf((byte)Material.WATER_LILY.getId()));
-  }
-
-  public static double getDefaultMaxHealth(LivingEntity entity)
-  {
-    switch ($SWITCH_TABLE$org$bukkit$entity$EntityType()[entity.getType().ordinal()])
-    {
-    case 44:
-      return 4.0D;
-    case 43:
-      return 10.0D;
-    case 24:
-      return 100.0D;
-    case 30:
-      return 1200.0D;
-    case 27:
-      return 50000.0D;
-    case 25:
-    case 29:
-    case 31:
-    case 41:
-    case 42:
-    case 49:
-      return 200.0D;
-    case 26:
-      return 800.0D;
-    case 45:
-      return 60.0D;
-    case 51:
-      return 7000.0D;
-    case 28:
-    case 32:
-    case 33:
-    case 37:
-    case 46:
-      return 1000.0D;
-    case 34:
-    case 52:
-      return 800.0D;
-    case 35:
-      return 600.0D;
-    case 47:
-      return 400.0D;
-    case 40:
-      return 8.0D;
-    case 38:
-    case 39:
-    case 48:
-      return 400.0D;
-    case 36:
-    case 50:
-    }return 46464.0D;
-  }
-
-  public static double getDefaultDamage(Material item)
-  {
-    switch ($SWITCH_TABLE$org$bukkit$Material()[item.ordinal()]) {
-    case 1:
-    case 179:
-    case 182:
-    case 194:
-      return 2.0D;
-    case 165:
-    case 180:
-    case 183:
-    case 195:
-      return 3.0D;
-    case 166:
-    case 177:
-    case 184:
-    case 186:
-    case 192:
-      return 4.0D;
-    case 167:
-    case 181:
-    case 187:
-      return 5.0D;
-    case 176:
-    case 188:
-      return 6.0D;
-    case 185:
-      return 7.0D;
-    }
+  case CHICKEN:
+    return 4.0D;
+  case COW:
     return 10.0D;
+  case CREEPER:
+    return 100.0D;
+  case GHAST:
+    return 1200.0D;
+  case GIANT:
+    return 50000.0D;
+  case PIG_ZOMBIE:
+  case PIG:
+  case SHEEP:
+  case SKELETON:
+  case OCELOT:
+  case SLIME:
+    return 200.0D;
+  case SPIDER:
+    return 800.0D;
+  case SQUID:
+    return 60.0D;
+  case HORSE:
+    return 7000.0D;
+  case ZOMBIE:
+  case WOLF:
+  case CAVE_SPIDER:
+  case ENDERMAN:
+  case ENDER_DRAGON:
+    return 1000.0D;
+  case SILVERFISH:
+  case VILLAGER:
+    return 800.0D;
+  case BLAZE:
+    return 600.0D;
+  case MUSHROOM_COW:
+    return 400.0D;
+  case WITCH:
+    return 8.0D;
+  case WITHER:
+  case SNOWMAN:
+  case BAT:
+	    return 400.0D;
   }
 
-  public static boolean isNearSpawner(Entity entity, int radius)
-  {
-    Location location = entity.getLocation();
-
-    for (int i = 0 - radius; i <= radius; i++) {
-      for (int j = 0 - radius; j <= radius; j++) {
-        for (int k = 0 - radius; k <= radius; k++) {
-          if (location.getBlock().getRelative(i, j, k).getType().equals(Material.MOB_SPAWNER)) {
-            return true;
-          }
-        }
-      }
-    }
-    return false;
-  }
-
-  public static int firstEmpty(ItemStack[] inventory)
-  {
-    for (int i = 9; i < inventory.length; i++) {
-      if (inventory[i] == null) {
-        return i;
-      }
-    }
-    return -1;
-  }
-
-  public static boolean moveItem(Hero hero, int slot, ItemStack item)
-  {
-    Player player = hero.getPlayer();
-    PlayerInventory inv = player.getInventory();
-    int empty = firstEmpty(inv.getContents());
-    if (empty == -1) {
-      player.getWorld().dropItemNaturally(player.getLocation(), item);
-      if (slot != -1) {
-        inv.clear(slot);
-      }
-      return false;
-    }
-    inv.setItem(empty, item);
-    if (slot != -1) {
-      inv.clear(slot);
-    }
-    Messaging.send(player, "Вы не обучены использовать $1.", new Object[] { MaterialUtil.getFriendlyName(item.getType()) });
-    return true;
-  }
-
-  public static void syncInventory(Player player, Heroes plugin)
-  {
-    plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable()
-    {
-      public void run()
-      {
-        Util.this.updateInventory();
-      }
-    });
-  }
-
-  public static boolean isWeapon(Material mat)
-  {
-    switch ($SWITCH_TABLE$org$bukkit$Material()[mat.ordinal()]) {
-    case 165:
-    case 166:
-    case 167:
-    case 170:
-    case 176:
-    case 177:
-    case 178:
-    case 179:
-    case 180:
-    case 181:
-    case 182:
-    case 183:
-    case 184:
-    case 185:
-    case 186:
-    case 187:
-    case 188:
-    case 192:
-    case 193:
-    case 194:
-    case 195:
-    case 199:
-    case 200:
-    case 201:
-    case 202:
-    case 203:
-    case 287:
-    case 300:
-      return true;
-    }
-    return false;
-  }
-
-  public static boolean isAwkwardWeapon(Material mat) {
-    switch (mat) {
-    case AIR:
-      return true;
-    }
-    return false;
-  }
-
-  public static boolean isArmor(Material mat)
-  {
-    switch ($SWITCH_TABLE$org$bukkit$Material()[mat.ordinal()]) {
-    case 87:
-    case 207:
-    case 208:
-    case 209:
-    case 210:
-    case 211:
-    case 212:
-    case 213:
-    case 214:
-    case 215:
-    case 216:
-    case 217:
-    case 218:
-    case 219:
-    case 220:
-    case 221:
-    case 222:
-    case 223:
-    case 224:
-    case 225:
-    case 226:
-    case 227:
-    case 228:
-    case 229:
-    case 230:
-    case 231:
-    case 232:
-    case 233:
-    case 234:
-    case 235:
-    case 236:
-    case 237:
-    case 238:
-    case 239:
-    case 240:
-    case 241:
-    case 242:
-    case 243:
-    case 244:
-    case 245:
-    case 246:
-    case 247:
-    case 248:
-    case 249:
-    case 250:
-    case 251:
-    case 252:
-    case 253:
-    case 254:
-    case 255:
-    case 256:
-    case 257:
-    case 258:
-      return true;
-    }
-    return true;
-  }
-
-  public static void disarmCheck(Hero hero, Heroes plugin)
-  {
-    ItemStack[] contents = hero.getPlayer().getInventory().getContents();
-    boolean changed = false;
-    for (int i = 0; i < 9; i++)
-      if (contents[i] != null)
-      {
-        if (isWeapon(contents[i].getType())) {
-          moveItem(hero, i, contents[i]);
-          changed = true;
-        }
-      }
-    if (changed)
-      syncInventory(hero.getPlayer(), plugin);
-  }
-
-  public static void moveFile(File from, File to)
-  {
-    if (!from.exists()) {
-      return;
-    }
-    OutputStream output = null;
-    InputStream input = null;
-    try {
-      to.getParentFile().mkdirs();
-      to.createNewFile();
-      output = new FileOutputStream(to, false);
-      input = new FileInputStream(from);
-      int out;
-      while ((out = input.read()) != -1)
-      {
-        int out;
-        output.write(out);
-      }
-      input.close();
-      output.close();
-      from.delete();
-    } catch (Exception e) {
-      e.printStackTrace();
-      try
-      {
-        input.close();
-        output.close();
-      }
-      catch (IOException localIOException)
-      {
-      }
-    }
-    finally
-    {
-      try
-      {
-        input.close();
-        output.close();
-      } catch (IOException localIOException1) {
-      }
-    }
-  }
-
-  public static int getMCExperience(int level) {
-    return level * 7;
-  }
-
-  public static Integer toInt(Object val) {
-    if ((val instanceof String))
-      try {
-        return Integer.valueOf((String)val);
-      } catch (NumberFormatException e) {
-        return null;
-      }
-    if (!(val instanceof Number)) {
-      return null;
-    }
-
-    if ((val instanceof Integer))
-      return (Integer)val;
-    if ((val instanceof Double))
-      return Integer.valueOf(((Double)val).intValue());
-    if ((val instanceof Float))
-      return Integer.valueOf(((Float)val).intValue());
-    if ((val instanceof Long))
-      return Integer.valueOf(((Long)val).intValue());
-    if ((val instanceof BigDecimal)) {
-      return Integer.valueOf(((BigDecimal)val).intValue());
-    }
-    return null;
-  }
-
-  public static int toIntNonNull(Object val, String name)
-  {
-    Integer newVal = toInt(val);
-    if (newVal == null) {
-      throw new IllegalArgumentException(name + " must be a numeral!");
-    }
-    return newVal.intValue();
-  }
-
-  public static double toDoubleNonNull(Object val, String name)
-  {
-    Double newVal = toDouble(val);
-    if (newVal == null) {
-      throw new IllegalArgumentException(name + " must be a numeral!");
-    }
-    return newVal.doubleValue();
-  }
-
-  public static boolean isFood(Material mat)
-  {
-    switch ($SWITCH_TABLE$org$bukkit$Material()[mat.ordinal()]) {
-    case 169:
-    case 191:
-    case 206:
-    case 260:
-    case 261:
-    case 263:
-    case 290:
-    case 291:
-    case 298:
-    case 301:
-    case 304:
-    case 305:
-    case 306:
-    case 307:
-    case 308:
-    case 316:
-    case 332:
-    case 333:
-    case 334:
-    case 335:
-    case 337:
-    case 341:
-      return true;
-    }
-    return false;
-  }
-
-  public static Double toDouble(Object val)
-  {
-    if ((val instanceof String))
-      try {
-        return Double.valueOf((String)val);
-      } catch (NumberFormatException e) {
-        return null;
-      }
-    if (!(val instanceof Number)) {
-      return null;
-    }
-
-    if ((val instanceof Integer))
-      return Double.valueOf(((Integer)val).doubleValue());
-    if ((val instanceof Double))
-      return (Double)val;
-    if ((val instanceof Float))
-      return Double.valueOf(((Float)val).doubleValue());
-    if ((val instanceof Long))
-      return Double.valueOf(((Long)val).doubleValue());
-    if ((val instanceof BigDecimal)) {
-      return Double.valueOf(((BigDecimal)val).doubleValue());
-    }
-    return null;
-  }
-
-  public static String stringDouble(double d)
-  {
-    return String.valueOf(formatDouble(d));
-  }
-
-  public static double formatDouble(double d) {
-    int val = (int)(d * 1000.0D);
-    return val / 1000.0D;
-  }
-
-  public static ItemStack itemFromString(String[] vals, int amount) {
-    ItemStack stack = null;
-    try {
-      int id = Integer.parseInt(vals[0]);
-      byte sub = 0;
-      if (vals.length > 1) {
-        sub = (byte)Integer.parseInt(vals[1]);
-      }
-      stack = new ItemStack(id, amount, (short)sub);
-    } catch (NumberFormatException localNumberFormatException) {
-    }
-    return stack;
-  }
-
-  public static int getFeatherFallLevel(PlayerInventory inv) {
-    int level = 0;
-    for (ItemStack armor : inv.getArmorContents()) {
-      if ((armor != null) && (armor.containsEnchantment(Enchantment.PROTECTION_FALL)))
-      {
-        level += armor.getEnchantmentLevel(Enchantment.PROTECTION_FALL);
-      }
-    }
-    return level;
-  }
-
-  public static final double nextRand()
-  {
-    return rand.nextInt(10000) / 10000.0D;
-  }
-
-  public static final int nextInt(int max) {
-    return rand.nextInt(max);
-  }
+  return 46464.0D;
 }
+/*     */ 
+/*     */   public static double getDefaultDamage(Material item)
+/*     */   {
+    switch (item) {
+    case AIR:
+    case WOOD_PICKAXE: 
+    case GOLD_PICKAXE:
+    case STONE_SPADE:
+        return 2;
+    case WOOD_AXE:
+    case GOLD_AXE:
+    case STONE_PICKAXE: 
+    case IRON_SPADE:
+        return 3;
+    case WOOD_SWORD: 
+    case GOLD_SWORD:
+    case STONE_AXE: 
+    case DIAMOND_SPADE:
+    case IRON_PICKAXE: 
+        return 4;
+    case DIAMOND_PICKAXE:
+    case IRON_AXE:
+    case STONE_SWORD: 
+        return 5;
+    case IRON_SWORD: 
+    case DIAMOND_AXE:
+        return 6;
+    case DIAMOND_SWORD: 
+        return 7;
+    default: 
+        return 10;
+    }
+}
+/*     */ 
+/*     */   public static boolean isNearSpawner(Entity entity, int radius)
+/*     */   {
+/* 385 */     Location location = entity.getLocation();
+/*     */ 
+/* 387 */     for (int i = 0 - radius; i <= radius; i++) {
+/* 388 */       for (int j = 0 - radius; j <= radius; j++) {
+/* 389 */         for (int k = 0 - radius; k <= radius; k++) {
+/* 390 */           if (location.getBlock().getRelative(i, j, k).getType().equals(Material.MOB_SPAWNER)) {
+/* 391 */             return true;
+/*     */           }
+/*     */         }
+/*     */       }
+/*     */     }
+/* 396 */     return false;
+/*     */   }
+/*     */ 
+/*     */   public static int firstEmpty(ItemStack[] inventory)
+/*     */   {
+/* 406 */     for (int i = 9; i < inventory.length; i++) {
+/* 407 */       if (inventory[i] == null) {
+/* 408 */         return i;
+/*     */       }
+/*     */     }
+/* 411 */     return -1;
+/*     */   }
+/*     */ 
+/*     */   public static boolean moveItem(Hero hero, int slot, ItemStack item)
+/*     */   {
+/* 423 */     Player player = hero.getPlayer();
+/* 424 */     PlayerInventory inv = player.getInventory();
+/* 425 */     int empty = firstEmpty(inv.getContents());
+/* 426 */     if (empty == -1) {
+/* 427 */       player.getWorld().dropItemNaturally(player.getLocation(), item);
+/* 428 */       if (slot != -1) {
+/* 429 */         inv.clear(slot);
+/*     */       }
+/* 431 */       return false;
+/*     */     }
+/* 433 */     inv.setItem(empty, item);
+/* 434 */     if (slot != -1) {
+/* 435 */       inv.clear(slot);
+/*     */     }
+/* 437 */     Messaging.send(player, "Вы не обучены использовать $1.", new Object[] { MaterialUtil.getFriendlyName(item.getType()) });
+/* 438 */     return true;
+/*     */   }
+/*     */ 
+/*     */   public static void syncInventory(final Player player, Heroes plugin)
+/*     */   {
+/* 450 */     plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable()
+/*     */     {
+/*     */       public void run()
+/*     */       {
+/* 455 */         player.updateInventory();
+/*     */       }
+/*     */     });
+/*     */   }
+/*     */ 
+/*     */   public static boolean isWeapon(Material mat)
+/*     */   {
+/* 467 */     switch (mat) {
+case IRON_AXE:
+case IRON_HOE:
+case IRON_PICKAXE:
+case IRON_SPADE:
+case IRON_SWORD:
+case STONE_AXE:
+case STONE_HOE:
+case STONE_PICKAXE:
+case STONE_SPADE:
+case STONE_SWORD:
+case GOLD_AXE:
+case GOLD_HOE:
+case GOLD_PICKAXE:
+case GOLD_SPADE:
+case GOLD_SWORD:
+case WOOD_AXE:
+case WOOD_HOE:
+case WOOD_PICKAXE:
+case WOOD_SPADE:
+case WOOD_SWORD:
+case DIAMOND_AXE:
+case DIAMOND_HOE:
+case DIAMOND_PICKAXE:
+case DIAMOND_SPADE:
+case DIAMOND_SWORD:
+case BOW:
+case FISHING_ROD:
+case SHEARS:
+    return true;
+default:
+    return false;}}
+/*     */ 
+/*     */   public static boolean isAwkwardWeapon(Material mat)
+/*     */   {
+/* 510 */     switch (mat) {
+case STONE:
+/* 528 */       return true;
+/*     */     }
+/* 530 */     return false;
+/*     */   }
+
+
+/*     */   public static boolean isArmor(Material mat)
+/*     */   {
+    switch (mat) {
+    case LEATHER_HELMET:
+    case LEATHER_LEGGINGS:
+    case LEATHER_BOOTS:
+    case LEATHER_CHESTPLATE:
+    case IRON_HELMET:
+    case IRON_LEGGINGS:
+    case IRON_CHESTPLATE:
+    case IRON_BOOTS:
+    case CHAINMAIL_HELMET:
+    case CHAINMAIL_LEGGINGS:
+    case CHAINMAIL_BOOTS:
+    case CHAINMAIL_CHESTPLATE:
+    case GOLD_HELMET:
+    case GOLD_LEGGINGS:
+    case GOLD_CHESTPLATE:
+    case GOLD_BOOTS:
+    case DIAMOND_HELMET: 
+    case DIAMOND_LEGGINGS:
+    case DIAMOND_CHESTPLATE:
+    case DIAMOND_BOOTS:
+    case PUMPKIN:
+    case MAGE1_HELMET:
+    case MAGE1_CHESTPLATE:
+    case MAGE1_LEGGINGS:
+    case MAGE1_BOOTS:
+    case MAGE2_HELMET:
+    case MAGE2_CHESTPLATE:
+    case MAGE2_LEGGINGS:
+    case MAGE2_BOOTS:
+    case WARRIOR1_HELMET:
+    case WARRIOR1_CHESTPLATE:
+    case WARRIOR1_LEGGINGS:
+    case WARRIOR1_BOOTS:
+    case WARRIOR2_HELMET:
+    case WARRIOR2_CHESTPLATE:
+    case WARRIOR2_LEGGINGS:
+    case WARRIOR2_BOOTS:
+    case ROGUE1_HELMET:
+    case ROGUE1_CHESTPLATE:
+    case ROGUE1_LEGGINGS:
+    case ROGUE1_BOOTS:
+    case ROGUE2_HELMET:
+    case ROGUE2_CHESTPLATE:
+    case ROGUE2_LEGGINGS:
+    case ROGUE2_BOOTS:
+    case CLERIC1_HELMET:
+    case CLERIC1_CHESTPLATE:
+    case CLERIC1_LEGGINGS:
+    case CLERIC1_BOOTS:
+    case CLERIC2_HELMET:
+    case CLERIC2_CHESTPLATE:
+    case CLERIC2_LEGGINGS:
+    case CLERIC2_BOOTS:
+        return true;
+    default:
+        return true;
+/*     */   }
+}
+/*     */ 
+/*     */   public static void disarmCheck(Hero hero, Heroes plugin)
+/*     */   {
+/* 570 */     ItemStack[] contents = hero.getPlayer().getInventory().getContents();
+/* 571 */     boolean changed = false;
+/* 572 */     for (int i = 0; i < 9; i++)
+/* 573 */       if (contents[i] != null)
+/*     */       {
+/* 576 */         if (isWeapon(contents[i].getType())) {
+/* 577 */           moveItem(hero, i, contents[i]);
+/* 578 */           changed = true;
+/*     */         }
+/*     */       }
+/* 581 */     if (changed)
+/* 582 */       syncInventory(hero.getPlayer(), plugin);
+/*     */   }
+/*     */ 
+/*     */   public static void moveFile(File from, File to)
+/*     */   {
+/* 587 */     if (!from.exists()) {
+/* 588 */       return;
+/*     */     }
+/* 590 */     OutputStream output = null;
+/* 591 */     InputStream input = null;
+/*     */     try {
+/* 593 */       to.getParentFile().mkdirs();
+/* 594 */       to.createNewFile();
+/* 595 */       output = new FileOutputStream(to, false);
+/* 596 */       input = new FileInputStream(from);
+/*     */       int out;
+/* 598 */       while ((out = input.read()) != -1) {
+/* 599 */         output.write(out);
+/*     */       }
+/* 601 */       input.close();
+/* 602 */       output.close();
+/* 603 */       from.delete();
+/*     */     } catch (Exception e) {
+/* 605 */       e.printStackTrace();
+/*     */     } finally {
+/*     */       try {
+/* 608 */         input.close();
+/* 609 */         output.close();
+/*     */       } catch (IOException e) {
+/*     */       }
+/*     */     }
+/*     */   }
+/*     */ 
+/*     */   public static int getMCExperience(int level) {
+/* 616 */     return level * 7;
+/*     */   }
+/*     */ 
+/*     */   public static Integer toInt(Object val) {
+/* 620 */     if ((val instanceof String))
+/*     */       try {
+/* 622 */         return Integer.valueOf((String)val);
+/*     */       } catch (NumberFormatException e) {
+/* 624 */         return null;
+/*     */       }
+/* 626 */     if (!(val instanceof Number)) {
+/* 627 */       return null;
+/*     */     }
+/*     */ 
+/* 630 */     if ((val instanceof Integer))
+/* 631 */       return (Integer)val;
+/* 632 */     if ((val instanceof Double))
+/* 633 */       return Integer.valueOf(((Double)val).intValue());
+/* 634 */     if ((val instanceof Float))
+/* 635 */       return Integer.valueOf(((Float)val).intValue());
+/* 636 */     if ((val instanceof Long))
+/* 637 */       return Integer.valueOf(((Long)val).intValue());
+/* 638 */     if ((val instanceof BigDecimal)) {
+/* 639 */       return Integer.valueOf(((BigDecimal)val).intValue());
+/*     */     }
+/* 641 */     return null;
+/*     */   }
+/*     */ 
+/*     */   public static int toIntNonNull(Object val, String name)
+/*     */   {
+/* 646 */     Integer newVal = toInt(val);
+/* 647 */     if (newVal == null) {
+/* 648 */       throw new IllegalArgumentException(name + " must be a numeral!");
+/*     */     }
+/* 650 */     return newVal.intValue();
+/*     */   }
+/*     */ 
+/*     */   public static double toDoubleNonNull(Object val, String name)
+/*     */   {
+/* 655 */     Double newVal = toDouble(val);
+/* 656 */     if (newVal == null) {
+/* 657 */       throw new IllegalArgumentException(name + " must be a numeral!");
+/*     */     }
+/* 659 */     return newVal.doubleValue();
+/*     */   }
+/*     */ 
+/*     */   public static boolean isFood(Material mat)
+/*     */   {
+/* 664 */     switch (mat) {
+case BREAD:
+case CARROT_ITEM:
+case BAKED_POTATO:
+case POTATO_ITEM:
+case POISONOUS_POTATO:
+case GOLDEN_CARROT:
+case PUMPKIN_PIE:
+case COOKIE:
+case MELON:
+case MUSHROOM_SOUP:
+case RAW_CHICKEN:
+case COOKED_CHICKEN:
+case RAW_BEEF:
+case COOKED_BEEF:
+case RAW_FISH:
+case COOKED_FISH:
+case PORK:
+case GRILLED_PORK:
+case APPLE:
+case GOLDEN_APPLE:
+case ROTTEN_FLESH:
+case SPIDER_EYE:
+/* 687 */       return true;
+default:
+	} return false;
+/*     */   }
+/*     */ 
+/*     */   public static Double toDouble(Object val)
+/*     */   {
+/* 694 */     if ((val instanceof String))
+/*     */       try {
+/* 696 */         return Double.valueOf((String)val);
+/*     */       } catch (NumberFormatException e) {
+/* 698 */         return null;
+/*     */       }
+/* 700 */     if (!(val instanceof Number)) {
+/* 701 */       return null;
+/*     */     }
+/*     */ 
+/* 704 */     if ((val instanceof Integer))
+/* 705 */       return Double.valueOf(((Integer)val).doubleValue());
+/* 706 */     if ((val instanceof Double))
+/* 707 */       return (Double)val;
+/* 708 */     if ((val instanceof Float))
+/* 709 */       return Double.valueOf(((Float)val).doubleValue());
+/* 710 */     if ((val instanceof Long))
+/* 711 */       return Double.valueOf(((Long)val).doubleValue());
+/* 712 */     if ((val instanceof BigDecimal)) {
+/* 713 */       return Double.valueOf(((BigDecimal)val).doubleValue());
+/*     */     }
+/* 715 */     return null;
+/*     */   }
+/*     */ 
+/*     */   public static String stringDouble(double d)
+/*     */   {
+/* 720 */     return String.valueOf(formatDouble(d));
+/*     */   }
+/*     */ 
+/*     */   public static double formatDouble(double d) {
+/* 724 */     int val = (int)(d * 1000.0D);
+/* 725 */     return val / 1000.0D;
+/*     */   }
+/*     */ 
+/*     */   public static ItemStack itemFromString(String[] vals, int amount) {
+/* 729 */     ItemStack stack = null;
+/*     */     try {
+/* 731 */       int id = Integer.parseInt(vals[0]);
+/* 732 */       byte sub = 0;
+/* 733 */       if (vals.length > 1) {
+/* 734 */         sub = (byte)Integer.parseInt(vals[1]);
+/*     */       }
+/* 736 */       stack = new ItemStack(id, amount, (short)sub);
+/*     */     } catch (NumberFormatException e) {
+/*     */     }
+/* 739 */     return stack;
+/*     */   }
+/*     */ 
+/*     */   public static int getFeatherFallLevel(PlayerInventory inv) {
+/* 743 */     int level = 0;
+/* 744 */     for (ItemStack armor : inv.getArmorContents()) {
+/* 745 */       if ((armor != null) && (armor.containsEnchantment(Enchantment.PROTECTION_FALL)))
+/*     */       {
+/* 748 */         level += armor.getEnchantmentLevel(Enchantment.PROTECTION_FALL);
+/*     */       }
+/*     */     }
+/* 751 */     return level;
+/*     */   }
+/*     */ 
+/*     */   public static final double nextRand()
+/*     */   {
+/* 756 */     return rand.nextInt(10000) / 10000.0D;
+/*     */   }
+/*     */ 
+/*     */   public static final int nextInt(int max) {
+/* 760 */     return rand.nextInt(max);
+/*     */   }
+/*     */ 
+/*     */   static
+/*     */   {
+/*  65 */     swords = new ArrayList(5);
+/*  66 */     swords.add("WOOD_SWORD");
+/*  67 */     swords.add("STONE_SWORD");
+/*  68 */     swords.add("IRON_SWORD");
+/*  69 */     swords.add("GOLD_SWORD");
+/*  70 */     swords.add("DIAMOND_SWORD");
+/*     */ 
+/*  72 */     axes = new ArrayList(5);
+/*  73 */     axes.add("WOOD_AXE");
+/*  74 */     axes.add("STONE_AXE");
+/*  75 */     axes.add("IRON_AXE");
+/*  76 */     axes.add("GOLD_AXE");
+/*  77 */     axes.add("DIAMOND_AXE");
+/*     */ 
+/*  79 */     shovels = new ArrayList(5);
+/*  80 */     shovels.add("WOOD_SPADE");
+/*  81 */     shovels.add("STONE_SPADE");
+/*  82 */     shovels.add("IRON_SPADE");
+/*  83 */     shovels.add("GOLD_SPADE");
+/*  84 */     shovels.add("DIAMOND_SPADE");
+/*     */ 
+/*  86 */     picks = new ArrayList(5);
+/*  87 */     picks.add("WOOD_PICKAXE");
+/*  88 */     picks.add("STONE_PICKAXE");
+/*  89 */     picks.add("IRON_PICKAXE");
+/*  90 */     picks.add("GOLD_PICKAXE");
+/*  91 */     picks.add("DIAMOND_PICKAXE");
+/*     */ 
+/*  93 */     hoes = new ArrayList(5);
+/*  94 */     hoes.add("WOOD_HOE");
+/*  95 */     hoes.add("STONE_HOE");
+/*  96 */     hoes.add("IRON_HOE");
+/*  97 */     hoes.add("GOLD_HOE");
+/*  98 */     hoes.add("DIAMOND_HOE");
+/*     */ 
+/* 100 */     tools = new ArrayList(2);
+/* 101 */     tools.add("SHEARS");
+/* 102 */     tools.add("FISHING_ROD");
+/* 103 */     tools.add("CARROT_STICK");
+/* 104 */     tools.addAll(shovels);
+/* 105 */     tools.addAll(hoes);
+/*     */ 
+/* 107 */     weapons = new ArrayList(26);
+/* 108 */     weapons.addAll(picks);
+/* 109 */     weapons.addAll(axes);
+/* 110 */     weapons.addAll(swords);
+/* 111 */     weapons.addAll(tools);
+/* 112 */     weapons.add("BOW");
+/*     */ 
+/* 114 */     armors = new ArrayList(21);
+/* 115 */     armors.add("LEATHER_HELMET");
+/* 116 */     armors.add("LEATHER_LEGGINGS");
+/* 117 */     armors.add("LEATHER_BOOTS");
+/* 118 */     armors.add("LEATHER_CHESTPLATE");
+/* 119 */     armors.add("IRON_HELMET");
+/* 120 */     armors.add("IRON_LEGGINGS");
+/* 121 */     armors.add("IRON_CHESTPLATE");
+/* 122 */     armors.add("IRON_BOOTS");
+/* 123 */     armors.add("CHAINMAIL_HELMET");
+/* 124 */     armors.add("CHAINMAIL_LEGGINGS");
+/* 125 */     armors.add("CHAINMAIL_BOOTS");
+/* 126 */     armors.add("CHAINMAIL_CHESTPLATE");
+/* 127 */     armors.add("GOLD_HELMET");
+/* 128 */     armors.add("GOLD_LEGGINGS");
+/* 129 */     armors.add("GOLD_CHESTPLATE");
+/* 130 */     armors.add("GOLD_BOOTS");
+/* 131 */     armors.add("DIAMOND_HELMET");
+/* 132 */     armors.add("DIAMOND_LEGGINGS");
+/* 133 */     armors.add("DIAMOND_CHESTPLATE");
+/* 134 */     armors.add("DIAMOND_BOOTS");
+/* 135 */     armors.add("PUMPKIN");
+/* 136 */     armors.add("SKULL_ITEM");
+/* 131 */     armors.add("MAGE1_HELMET");
+/* 132 */     armors.add("MAGE1_LEGGINGS");
+/* 133 */     armors.add("MAGE1_CHESTPLATE");
+/* 134 */     armors.add("MAGE1_BOOTS");
+/* 131 */     armors.add("MAGE2_HELMET");
+/* 132 */     armors.add("MAGE2_LEGGINGS");
+/* 133 */     armors.add("MAGE2_CHESTPLATE");
+/* 134 */     armors.add("MAGE2_BOOTS");
+/* 131 */     armors.add("WARRIOR1_HELMET");
+/* 132 */     armors.add("WARRIOR1_LEGGINGS");
+/* 133 */     armors.add("WARRIOR1_CHESTPLATE");
+/* 134 */     armors.add("WARRIOR1_BOOTS");
+/* 131 */     armors.add("WARRIOR2_HELMET");
+/* 132 */     armors.add("WARRIOR2_LEGGINGS");
+/* 133 */     armors.add("WARRIOR2_CHESTPLATE");
+/* 134 */     armors.add("WARRIOR2_BOOTS");
+/* 131 */     armors.add("ROGUE1_HELMET");
+/* 132 */     armors.add("ROGUE1_LEGGINGS");
+/* 133 */     armors.add("ROGUE1_CHESTPLATE");
+/* 134 */     armors.add("ROGUE1_BOOTS");
+/* 131 */     armors.add("ROGUE2_HELMET");
+/* 132 */     armors.add("ROGUE2_LEGGINGS");
+/* 133 */     armors.add("ROGUE2_CHESTPLATE");
+/* 134 */     armors.add("ROGUE2_BOOTS");
+/* 131 */     armors.add("CLERIC1_HELMET");
+/* 132 */     armors.add("CLERIC1_LEGGINGS");
+/* 133 */     armors.add("CLERIC1_CHESTPLATE");
+/* 134 */     armors.add("CLERIC1_BOOTS");
+/* 131 */     armors.add("CLERIC2_HELMET");
+/* 132 */     armors.add("CLERIC2_LEGGINGS");
+/* 133 */     armors.add("CLERIC2_CHESTPLATE");
+/* 134 */     armors.add("CLERIC2_BOOTS");
+/*     */ 
+/* 138 */     interactableBlocks = new HashSet(40);
+/* 139 */     interactableBlocks.add(Material.CHEST);
+/* 140 */     interactableBlocks.add(Material.LOCKED_CHEST);
+/* 141 */     interactableBlocks.add(Material.IRON_DOOR_BLOCK);
+/* 142 */     interactableBlocks.add(Material.SIGN);
+/* 143 */     interactableBlocks.add(Material.WALL_SIGN);
+/* 144 */     interactableBlocks.add(Material.SIGN_POST);
+/* 145 */     interactableBlocks.add(Material.WORKBENCH);
+/* 146 */     interactableBlocks.add(Material.STONE_BUTTON);
+/* 147 */     interactableBlocks.add(Material.WOOD_BUTTON);
+/* 148 */     interactableBlocks.add(Material.LEVER);
+/* 149 */     interactableBlocks.add(Material.WOODEN_DOOR);
+/* 150 */     interactableBlocks.add(Material.TRAP_DOOR);
+/* 151 */     interactableBlocks.add(Material.TRAPPED_CHEST);
+/* 152 */     interactableBlocks.add(Material.DIODE);
+/* 153 */     interactableBlocks.add(Material.DIODE_BLOCK_ON);
+/* 154 */     interactableBlocks.add(Material.DIODE_BLOCK_OFF);
+/* 155 */     interactableBlocks.add(Material.DISPENSER);
+/* 156 */     interactableBlocks.add(Material.HOPPER);
+/* 157 */     interactableBlocks.add(Material.DROPPER);
+/* 158 */     interactableBlocks.add(Material.REDSTONE_COMPARATOR);
+/* 159 */     interactableBlocks.add(Material.REDSTONE_COMPARATOR_ON);
+/* 160 */     interactableBlocks.add(Material.REDSTONE_COMPARATOR_OFF);
+/* 161 */     interactableBlocks.add(Material.FURNACE);
+/* 162 */     interactableBlocks.add(Material.BURNING_FURNACE);
+/* 163 */     interactableBlocks.add(Material.CAULDRON);
+/* 164 */     interactableBlocks.add(Material.JUKEBOX);
+/* 165 */     interactableBlocks.add(Material.NOTE_BLOCK);
+/* 166 */     interactableBlocks.add(Material.STORAGE_MINECART);
+/* 167 */     interactableBlocks.add(Material.ENDER_CHEST);
+/* 168 */     interactableBlocks.add(Material.FENCE_GATE);
+/* 169 */     interactableBlocks.add(Material.ENCHANTMENT_TABLE);
+/* 170 */     interactableBlocks.add(Material.BREWING_STAND);
+/* 171 */     interactableBlocks.add(Material.ITEM_FRAME);
+/* 172 */     interactableBlocks.add(Material.BOAT);
+/* 173 */     interactableBlocks.add(Material.MINECART);
+/* 174 */     interactableBlocks.add(Material.FLOWER_POT);
+/* 175 */     interactableBlocks.add(Material.BEACON);
+/* 176 */     interactableBlocks.add(Material.BED_BLOCK);
+/* 177 */     interactableBlocks.add(Material.ANVIL);
+/* 178 */     interactableBlocks.add(Material.COMMAND);
+/*     */ 
+/* 180 */     interactableIds = new HashSet(40);
+/* 181 */     interactableIds.add(Byte.valueOf((byte)Material.CHEST.getId()));
+/* 182 */     interactableIds.add(Byte.valueOf((byte)Material.LOCKED_CHEST.getId()));
+/* 183 */     interactableIds.add(Byte.valueOf((byte)Material.IRON_DOOR_BLOCK.getId()));
+/* 184 */     interactableIds.add(Byte.valueOf((byte)Material.SIGN.getId()));
+/* 185 */     interactableIds.add(Byte.valueOf((byte)Material.WALL_SIGN.getId()));
+/* 186 */     interactableIds.add(Byte.valueOf((byte)Material.SIGN_POST.getId()));
+/* 187 */     interactableIds.add(Byte.valueOf((byte)Material.WORKBENCH.getId()));
+/* 188 */     interactableIds.add(Byte.valueOf((byte)Material.STONE_BUTTON.getId()));
+/* 189 */     interactableIds.add(Byte.valueOf((byte)Material.WOOD_BUTTON.getId()));
+/* 190 */     interactableIds.add(Byte.valueOf((byte)Material.LEVER.getId()));
+/* 191 */     interactableIds.add(Byte.valueOf((byte)Material.WOODEN_DOOR.getId()));
+/* 192 */     interactableIds.add(Byte.valueOf((byte)Material.TRAP_DOOR.getId()));
+/* 193 */     interactableIds.add(Byte.valueOf((byte)Material.TRAPPED_CHEST.getId()));
+/* 194 */     interactableIds.add(Byte.valueOf((byte)Material.DIODE.getId()));
+/* 195 */     interactableIds.add(Byte.valueOf((byte)Material.DIODE_BLOCK_ON.getId()));
+/* 196 */     interactableIds.add(Byte.valueOf((byte)Material.DIODE_BLOCK_OFF.getId()));
+/* 197 */     interactableIds.add(Byte.valueOf((byte)Material.DISPENSER.getId()));
+/* 198 */     interactableIds.add(Byte.valueOf((byte)Material.HOPPER.getId()));
+/* 199 */     interactableIds.add(Byte.valueOf((byte)Material.DROPPER.getId()));
+/* 200 */     interactableIds.add(Byte.valueOf((byte)Material.REDSTONE_COMPARATOR.getId()));
+/* 201 */     interactableIds.add(Byte.valueOf((byte)Material.REDSTONE_COMPARATOR_ON.getId()));
+/* 202 */     interactableIds.add(Byte.valueOf((byte)Material.REDSTONE_COMPARATOR_OFF.getId()));
+/* 203 */     interactableIds.add(Byte.valueOf((byte)Material.FURNACE.getId()));
+/* 204 */     interactableIds.add(Byte.valueOf((byte)Material.BURNING_FURNACE.getId()));
+/* 205 */     interactableIds.add(Byte.valueOf((byte)Material.CAULDRON.getId()));
+/* 206 */     interactableIds.add(Byte.valueOf((byte)Material.JUKEBOX.getId()));
+/* 207 */     interactableIds.add(Byte.valueOf((byte)Material.NOTE_BLOCK.getId()));
+/* 208 */     interactableIds.add(Byte.valueOf((byte)Material.STORAGE_MINECART.getId()));
+/* 209 */     interactableIds.add(Byte.valueOf((byte)Material.ENDER_CHEST.getId()));
+/* 210 */     interactableIds.add(Byte.valueOf((byte)Material.FENCE_GATE.getId()));
+/* 211 */     interactableIds.add(Byte.valueOf((byte)Material.ENCHANTMENT_TABLE.getId()));
+/* 212 */     interactableIds.add(Byte.valueOf((byte)Material.BREWING_STAND.getId()));
+/* 213 */     interactableIds.add(Byte.valueOf((byte)Material.ITEM_FRAME.getId()));
+/* 214 */     interactableIds.add(Byte.valueOf((byte)Material.BOAT.getId()));
+/* 215 */     interactableIds.add(Byte.valueOf((byte)Material.MINECART.getId()));
+/* 216 */     interactableIds.add(Byte.valueOf((byte)Material.FLOWER_POT.getId()));
+/* 217 */     interactableIds.add(Byte.valueOf((byte)Material.BEACON.getId()));
+/* 218 */     interactableIds.add(Byte.valueOf((byte)Material.BED_BLOCK.getId()));
+/* 219 */     interactableIds.add(Byte.valueOf((byte)Material.ANVIL.getId()));
+/* 220 */     interactableIds.add(Byte.valueOf((byte)Material.COMMAND.getId()));
+/*     */ 
+/* 222 */     transparentBlocks = new HashSet(26);
+/* 223 */     transparentBlocks.add(Material.AIR);
+/* 224 */     transparentBlocks.add(Material.SNOW);
+/* 225 */     transparentBlocks.add(Material.TRIPWIRE);
+/* 226 */     transparentBlocks.add(Material.REDSTONE_WIRE);
+/* 227 */     transparentBlocks.add(Material.TORCH);
+/* 228 */     transparentBlocks.add(Material.REDSTONE_TORCH_OFF);
+/* 229 */     transparentBlocks.add(Material.REDSTONE_TORCH_ON);
+/* 230 */     transparentBlocks.add(Material.RED_ROSE);
+/* 231 */     transparentBlocks.add(Material.YELLOW_FLOWER);
+/* 232 */     transparentBlocks.add(Material.SAPLING);
+/* 233 */     transparentBlocks.add(Material.LADDER);
+/* 234 */     transparentBlocks.add(Material.STONE_PLATE);
+/* 235 */     transparentBlocks.add(Material.WOOD_PLATE);
+/* 236 */     transparentBlocks.add(Material.CROPS);
+/* 237 */     transparentBlocks.add(Material.LEVER);
+/* 238 */     transparentBlocks.add(Material.WATER);
+/* 239 */     transparentBlocks.add(Material.STATIONARY_WATER);
+/* 240 */     transparentBlocks.add(Material.RAILS);
+/* 241 */     transparentBlocks.add(Material.POWERED_RAIL);
+/* 242 */     transparentBlocks.add(Material.DETECTOR_RAIL);
+/* 243 */     transparentBlocks.add(Material.DIODE_BLOCK_OFF);
+/* 244 */     transparentBlocks.add(Material.DIODE_BLOCK_ON);
+/* 245 */     transparentBlocks.add(Material.CARPET);
+/* 246 */     transparentBlocks.add(Material.VINE);
+/* 247 */     transparentBlocks.add(Material.DEAD_BUSH);
+/* 248 */     transparentBlocks.add(Material.WATER_LILY);
+/*     */ 
+/* 250 */     transparentIds = new HashSet(26);
+/* 251 */     transparentIds.add(Byte.valueOf((byte)Material.AIR.getId()));
+/* 252 */     transparentIds.add(Byte.valueOf((byte)Material.SNOW.getId()));
+/* 253 */     transparentIds.add(Byte.valueOf((byte)Material.TRIPWIRE.getId()));
+/* 254 */     transparentIds.add(Byte.valueOf((byte)Material.REDSTONE_WIRE.getId()));
+/* 255 */     transparentIds.add(Byte.valueOf((byte)Material.TORCH.getId()));
+/* 256 */     transparentIds.add(Byte.valueOf((byte)Material.REDSTONE_TORCH_OFF.getId()));
+/* 257 */     transparentIds.add(Byte.valueOf((byte)Material.REDSTONE_TORCH_ON.getId()));
+/* 258 */     transparentIds.add(Byte.valueOf((byte)Material.RED_ROSE.getId()));
+/* 259 */     transparentIds.add(Byte.valueOf((byte)Material.YELLOW_FLOWER.getId()));
+/* 260 */     transparentIds.add(Byte.valueOf((byte)Material.SAPLING.getId()));
+/* 261 */     transparentIds.add(Byte.valueOf((byte)Material.LADDER.getId()));
+/* 262 */     transparentIds.add(Byte.valueOf((byte)Material.STONE_PLATE.getId()));
+/* 263 */     transparentIds.add(Byte.valueOf((byte)Material.WOOD_PLATE.getId()));
+/* 264 */     transparentIds.add(Byte.valueOf((byte)Material.CROPS.getId()));
+/* 265 */     transparentIds.add(Byte.valueOf((byte)Material.LEVER.getId()));
+/* 266 */     transparentIds.add(Byte.valueOf((byte)Material.WATER.getId()));
+/* 267 */     transparentIds.add(Byte.valueOf((byte)Material.STATIONARY_WATER.getId()));
+/* 268 */     transparentIds.add(Byte.valueOf((byte)Material.RAILS.getId()));
+/* 269 */     transparentIds.add(Byte.valueOf((byte)Material.POWERED_RAIL.getId()));
+/* 270 */     transparentIds.add(Byte.valueOf((byte)Material.DETECTOR_RAIL.getId()));
+/* 271 */     transparentIds.add(Byte.valueOf((byte)Material.DIODE_BLOCK_OFF.getId()));
+/* 272 */     transparentIds.add(Byte.valueOf((byte)Material.DIODE_BLOCK_ON.getId()));
+/* 273 */     transparentIds.add(Byte.valueOf((byte)Material.CARPET.getId()));
+/* 274 */     transparentIds.add(Byte.valueOf((byte)Material.VINE.getId()));
+/* 275 */     transparentIds.add(Byte.valueOf((byte)Material.DEAD_BUSH.getId()));
+/* 276 */     transparentIds.add(Byte.valueOf((byte)Material.WATER_LILY.getId()));
+/*     */   }
+/*     */ }
+
+/* Location:           C:\Users\Р‘Р°РґРЅРёРє\Dropbox\Public\Heroes.jar
+ * Qualified Name:     com.herocraftonline.heroes.util.Util
+ * JD-Core Version:    0.6.2
+ */
